@@ -60,6 +60,8 @@
             this.pnlSearchBar = new System.Windows.Forms.FlowLayoutPanel();
             this.richTextBoxSearch = new System.Windows.Forms.RichTextBox();
             this.btnSearch = new System.Windows.Forms.Button();
+            this.btnRefreshTable = new System.Windows.Forms.Button();
+            this.lblIndicator = new System.Windows.Forms.Label();
             this.pnlFooter = new System.Windows.Forms.Panel();
             this.pnlControl = new System.Windows.Forms.FlowLayoutPanel();
             this.btnNew = new System.Windows.Forms.Button();
@@ -69,8 +71,6 @@
             this.btnDelete = new System.Windows.Forms.Button();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblSubTitle = new System.Windows.Forms.Label();
-            this.btnRefreshTable = new System.Windows.Forms.Button();
-            this.lblIndicator = new System.Windows.Forms.Label();
             lblTitle = new System.Windows.Forms.Label();
             this.pnlRoot.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pnlContent)).BeginInit();
@@ -515,6 +515,32 @@
             this.btnSearch.UseVisualStyleBackColor = true;
             this.btnSearch.Click += new System.EventHandler(this.btnSearch_click);
             // 
+            // btnRefreshTable
+            // 
+            this.btnRefreshTable.AutoSize = true;
+            this.btnRefreshTable.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btnRefreshTable.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnRefreshTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRefreshTable.Image = global::Brief_CRUD.Properties.Resources.refresh_page_option;
+            this.btnRefreshTable.Location = new System.Drawing.Point(58, 3);
+            this.btnRefreshTable.Name = "btnRefreshTable";
+            this.btnRefreshTable.Size = new System.Drawing.Size(38, 38);
+            this.btnRefreshTable.TabIndex = 2;
+            this.btnRefreshTable.UseVisualStyleBackColor = true;
+            this.btnRefreshTable.Click += new System.EventHandler(this.btnRefreshTable_click);
+            // 
+            // lblIndicator
+            // 
+            this.lblIndicator.AutoSize = true;
+            this.lblIndicator.BackColor = System.Drawing.Color.Gold;
+            this.lblIndicator.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblIndicator.Location = new System.Drawing.Point(12, 8);
+            this.lblIndicator.Margin = new System.Windows.Forms.Padding(8);
+            this.lblIndicator.MinimumSize = new System.Drawing.Size(35, 0);
+            this.lblIndicator.Name = "lblIndicator";
+            this.lblIndicator.Size = new System.Drawing.Size(35, 28);
+            this.lblIndicator.TabIndex = 3;
+            // 
             // pnlFooter
             // 
             this.pnlFooter.Controls.Add(this.pnlControl);
@@ -637,32 +663,6 @@
             this.lblSubTitle.TabIndex = 4;
             this.lblSubTitle.Text = "Brief CRUD Activity";
             this.lblSubTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btnRefreshTable
-            // 
-            this.btnRefreshTable.AutoSize = true;
-            this.btnRefreshTable.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.btnRefreshTable.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnRefreshTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRefreshTable.Image = global::Brief_CRUD.Properties.Resources.refresh_page_option;
-            this.btnRefreshTable.Location = new System.Drawing.Point(58, 3);
-            this.btnRefreshTable.Name = "btnRefreshTable";
-            this.btnRefreshTable.Size = new System.Drawing.Size(38, 38);
-            this.btnRefreshTable.TabIndex = 2;
-            this.btnRefreshTable.UseVisualStyleBackColor = true;
-            this.btnRefreshTable.Click += new System.EventHandler(this.btnRefreshTable_click);
-            // 
-            // lblIndicator
-            // 
-            this.lblIndicator.AutoSize = true;
-            this.lblIndicator.BackColor = System.Drawing.Color.Gold;
-            this.lblIndicator.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblIndicator.Location = new System.Drawing.Point(12, 8);
-            this.lblIndicator.Margin = new System.Windows.Forms.Padding(8);
-            this.lblIndicator.MinimumSize = new System.Drawing.Size(35, 0);
-            this.lblIndicator.Name = "lblIndicator";
-            this.lblIndicator.Size = new System.Drawing.Size(35, 28);
-            this.lblIndicator.TabIndex = 3;
             // 
             // StudentEntries
             // 
