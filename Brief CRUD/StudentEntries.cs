@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Windows.Forms;
+﻿using Brief_CRUD.Model;
+using Brief_CRUD.Service;
 using MySql.Data.MySqlClient;
-
-using Brief_CRUD.Model;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace Brief_CRUD
 {
@@ -15,44 +16,132 @@ namespace Brief_CRUD
         private Student _currentStudent;
         private bool _isNewMode;
         private string _previousId;
+        private bool _isRefreshing;
 
         public StudentEntries()
         {
-            _repository = new StudentRepository();
-            _bindingSource = new BindingSource();
-            InitializeComponent();
-            dataGridViewDataTable.DataSource = _bindingSource;
-            dataGridViewDataTable.SelectionChanged += dataGridViewDataTable_SelectionChanged;
+            this._repository = new StudentRepository();
+            this._bindingSource = new BindingSource();
+            this.InitializeComponent();
+            this.dataGridViewDataTable.DataSource = this._bindingSource;
+            this.dataGridViewDataTable.SelectionChanged += this.dataGridViewDataTable_SelectionChanged;
+
+            this.FormClosing += this.StudentEntries_FormClosing;
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            LoadData();
-            ClearFields();
+            this.LoadData();
+            this.ClearFields();
+            this.UpdateControlStates();
+
+            //btnIndicator.TabStop = false;
+            //btnIndicator.Click += (s, _) => { /*REM: ignore */ };
+            //btnIndicator.KeyDown += (s, _) => { /*REM: ignore */ };
+
+            dataGridViewDataTable.AllowUserToAddRows = false;
+
+            dataGridViewDataTable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            var gridFont = new Font("Microsoft Sans Serif", 14f, FontStyle.Regular);
+            dataGridViewDataTable.DefaultCellStyle.Font = gridFont;
+            dataGridViewDataTable.ColumnHeadersDefaultCellStyle.Font = new Font("Microsoft Sans Serif", 14f, FontStyle.Bold);
+            dataGridViewDataTable.RowHeadersDefaultCellStyle.Font = gridFont;
+
+            dataGridViewDataTable.AlternatingRowsDefaultCellStyle = null;
+
+            this.SetColumnMinimumWidths();
+        }
+
+        private void SetColumnMinimumWidths()
+        {
+            //REM: Assuming columns are auto-generated from Student properties: Id, FirstName, LastName, MiddleName, Gender, DoB, Course
+            if (dataGridViewDataTable.Columns.Count > 0)
+            {
+                //REM: Set reasonable minimum widths (adjust as needed)
+                dataGridViewDataTable.Columns["Id"].MinimumWidth = 150; //REM: Wider for ID
+                dataGridViewDataTable.Columns["FirstName"].MinimumWidth = 200;
+                dataGridViewDataTable.Columns["LastName"].MinimumWidth = 200;
+                dataGridViewDataTable.Columns["MiddleName"].MinimumWidth = 200;
+                dataGridViewDataTable.Columns["Gender"].MinimumWidth = 100;
+                dataGridViewDataTable.Columns["DoB"].MinimumWidth = 150; //REM: Date of Birth
+                dataGridViewDataTable.Columns["Course"].MinimumWidth = 100;
+            }
         }
 
         private void LoadData()
         {
             try
             {
+                _isRefreshing = true;
+
+                string selectedId = null;
+                if (dataGridViewDataTable.CurrentRow != null)
+                    selectedId = dataGridViewDataTable.CurrentRow.Cells["Id"]?.Value?.ToString();
+
                 _bindingSource.DataSource = _repository.GetAll();
                 _bindingSource.ResetBindings(false);
+
+                dataGridViewDataTable.ClearSelection();
+
+                //if (!string.IsNullOrEmpty(selectedId))
+                //{
+                //    SelectRowById(selectedId); 
+                //}
+
+                btnSearch.Enabled = true;
+                richTextBoxSearch.Enabled = true;
+                dataGridViewDataTable.Enabled = true;
+                lblIndicator.BackColor = Color.ForestGreen;
             }
             catch (MySqlException ex)
             {
                 MessageBox.Show("Database connection error: " + ex.Message, "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                btnSearch.Enabled = false;
+                richTextBoxSearch.Enabled = false;
+                dataGridViewDataTable.Enabled = false;
+                lblIndicator.BackColor = Color.Red;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                btnSearch.Enabled = false;
+                richTextBoxSearch.Enabled = false;
+                dataGridViewDataTable.Enabled = false;
+                lblIndicator.BackColor = Color.Red;
+            }
+            finally
+            {
+                _isRefreshing = false;
             }
         }
 
+
         private void dataGridViewDataTable_SelectionChanged(object sender, EventArgs e)
         {
+            if (_isRefreshing) return;
+
             if (dataGridViewDataTable.CurrentRow != null)
             {
-                string id = dataGridViewDataTable.CurrentRow.Cells["Id"].Value.ToString();
+                var row = dataGridViewDataTable.CurrentRow;
+                if (row == null || row.IsNewRow)
+                {
+                    _currentStudent = null;
+                    UpdateControlStates();
+                    return;
+                }
+
+                var idCell = row.Cells["Id"];
+                if (idCell == null || idCell.Value == null || idCell.Value == DBNull.Value)
+                {
+                    _currentStudent = null;
+                    UpdateControlStates();
+                    return;
+                }
+
+                string id = idCell.Value.ToString();
                 try
                 {
                     _currentStudent = _repository.GetById(id);
@@ -60,9 +149,7 @@ namespace Brief_CRUD
                     {
                         PopulateFields(_currentStudent);
                         _isNewMode = false;
-                        btnGenerateId.Enabled = false;
-                        btnUndoId.Enabled = false;
-                        txtBoxId.ReadOnly = true;
+                        UpdateControlStates();
                     }
                 }
                 catch (MySqlException ex)
@@ -75,6 +162,11 @@ namespace Brief_CRUD
                     MessageBox.Show("Error fetching student: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     _currentStudent = null;
                 }
+            }
+            else
+            {
+                _currentStudent = null;
+                this.UpdateControlStates();
             }
         }
 
@@ -103,9 +195,35 @@ namespace Brief_CRUD
             _currentStudent = null;
             _isNewMode = false;
             _previousId = "";
-            btnGenerateId.Enabled = false;
-            btnUndoId.Enabled = false;
-            txtBoxId.ReadOnly = false;
+            this.UpdateControlStates();
+        }
+
+        private void UpdateControlStates()
+        {
+            bool hasData = _currentStudent != null || _isNewMode;
+            bool isEditMode = !_isNewMode && _currentStudent != null;
+
+            //REM: Form fields: Enable only in new or edit mode
+            txtBoxFirstName.Enabled = hasData;
+            txtBoxLastName.Enabled = hasData;
+            txtBoxMiddleName.Enabled = hasData;
+            radioBtnMale.Enabled = hasData;
+            radioBtnFemale.Enabled = hasData;
+            dtpDoB.Enabled = hasData;
+            cBoxCourse.Enabled = hasData;
+            txtBoxId.Enabled = _isNewMode; //REM: ID editable only in new mode
+
+            //REM: Buttons
+            btnNew.Enabled = !hasData; //REM: Enable New only when no data (cleared state)
+            btnInsert.Enabled = _isNewMode;
+            btnClear.Enabled = hasData;
+            btnUpdate.Enabled = isEditMode;
+            btnDelete.Enabled = isEditMode;
+            btnGenerateId.Enabled = _isNewMode;
+            btnUndoId.Enabled = _isNewMode;
+            txtBoxId.ReadOnly = !_isNewMode;
+            btnSearch.Enabled = richTextBoxSearch.Enabled;
+            btnRefreshTable.Enabled = true;
         }
 
         private Student GetStudentFromFields()
@@ -123,27 +241,27 @@ namespace Brief_CRUD
 
             if (string.IsNullOrEmpty(student.Id))
             {
-                MessageBox.Show("ID is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "ID is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return null;
             }
             if (string.IsNullOrEmpty(student.FirstName))
             {
-                MessageBox.Show("First Name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "First Name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return null;
             }
             if (string.IsNullOrEmpty(student.LastName))
             {
-                MessageBox.Show("Last Name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "Last Name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return null;
             }
             if (string.IsNullOrEmpty(student.Gender))
             {
-                MessageBox.Show("Gender is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "Gender is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return null;
             }
             if (string.IsNullOrEmpty(student.Course))
             {
-                MessageBox.Show("Course is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "Course is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return null;
             }
 
@@ -152,53 +270,66 @@ namespace Brief_CRUD
 
         private void btnNew_click(object sender, EventArgs e)
         {
-            ClearFields();
+            this.ClearFields();
             _isNewMode = true;
-            btnGenerateId.Enabled = true;
-            btnUndoId.Enabled = true;
-            txtBoxId.ReadOnly = false;
+            this.UpdateControlStates();
         }
 
         private void btnInsert_click(object sender, EventArgs e)
         {
-            if (_isNewMode)
-            {
-                var student = GetStudentFromFields();
-                if (student != null)
-                {
-                    try
-                    {
-                        _repository.Insert(student);
-                        MessageBox.Show("Student inserted successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        LoadData();
-                        ClearFields();
-                    }
-                    catch (MySqlException ex)
-                    {
-                        if (ex.Number == 1062) //REM: Duplicate entry
-                        {
-                            MessageBox.Show("Duplicate ID. Please generate a new one.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Database error inserting student: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error inserting student: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-            else
+            if (!_isNewMode)
             {
                 MessageBox.Show("Use New button to create a new entry.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var student = this.GetStudentFromFields();
+            if (student == null) return;
+
+            try
+            {
+                _repository.Insert(student);
+
+                MessageBox.Show(this, "Student inserted successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                this.LoadData();
+                this.ClearFields();
+
+                // Highlight the newly added row: select, scroll into view, and flash it.
+                //try
+                //{
+                //    SelectRowById(student.Id);
+                //    var row = dataGridViewDataTable.Rows
+                //              .Cast<DataGridViewRow>()
+                //              .FirstOrDefault(r => r.Cells["Id"]?.Value?.ToString() == student.Id);
+                //    FlashRow(row, 1500); // flash for 1.5 seconds
+                //}
+                //catch
+                //{
+                //    // don't crash the app if selection/flash fails for some reason
+                //}
+            }
+            catch (MySqlException ex)
+            {
+                if (ex.Number == 1062) // Duplicate entry
+                {
+                    MessageBox.Show("Duplicate ID. Please generate a new one.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show("Database error inserting student: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error inserting student: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
+
         private void btnClear_click(object sender, EventArgs e)
         {
-            ClearFields();
+            this.ClearFields();
         }
 
         private void btnUpdate_click(object sender, EventArgs e)
@@ -207,7 +338,7 @@ namespace Brief_CRUD
             {
                 if (MessageBox.Show("Are you sure you want to update this student?", "Confirm Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    var student = GetStudentFromFields();
+                    var student = this.GetStudentFromFields();
                     if (student != null)
                     {
                         student.Id = _currentStudent.Id; //REM: Ensure ID not changed
@@ -215,8 +346,8 @@ namespace Brief_CRUD
                         {
                             _repository.Update(student);
                             MessageBox.Show("Student updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            LoadData();
-                            ClearFields();
+                            this.LoadData();
+                            this.ClearFields();
                         }
                         catch (MySqlException ex)
                         {
@@ -333,190 +464,255 @@ namespace Brief_CRUD
         {
             //REM: Empty paint handler for pnlControlId
         }
+
+        private void pnlRoot_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void btnRefreshTable_click(object sender, EventArgs e)
+        {
+            this.LoadData();
+        }
+
+        private void richTxtBox_keyUp(object sender, KeyEventArgs e)
+        {
+            this.btnSearch_click(sender, e);
+        }
+
+        //private void SelectRowById(string id)
+        //{
+        //    if (string.IsNullOrEmpty(id) || dataGridViewDataTable.Rows.Count == 0) return;
+
+        //    // If bound to a BindingSource, prefer this (respects sorting/filtering)
+        //    if (dataGridViewDataTable.DataSource is BindingSource bs)
+        //    {
+        //        int pos = bs.Find("Id", id);
+        //        if (pos >= 0)
+        //        {
+        //            bs.Position = pos;
+        //            var row = dataGridViewDataTable.Rows[pos];
+        //            EnsureRowVisible(row);
+        //            row.Selected = true;
+        //            return;
+        //        }
+        //    }
+
+        //    // Fallback: scan rows
+        //    foreach (DataGridViewRow r in dataGridViewDataTable.Rows)
+        //    {
+        //        if (r.Cells["Id"]?.Value?.ToString() == id)
+        //        {
+        //            r.Selected = true;
+        //            dataGridViewDataTable.CurrentCell = r.Cells[0];
+        //            EnsureRowVisible(r);
+        //            return;
+        //        }
+        //    }
+        //}
+
+        //private void EnsureRowVisible(DataGridViewRow row)
+        //{
+        //    if (row == null) return;
+        //    try
+        //    {
+        //        // ensure row is the first displayed scrolling row (or at least visible)
+        //        dataGridViewDataTable.FirstDisplayedScrollingRowIndex = Math.Max(0, row.Index);
+        //    }
+        //    catch
+        //    {
+        //        // ignore if invalid state
+        //    }
+        //}
+
+        //private void FlashRow(DataGridViewRow row, int ms = 1200)
+        //{
+        //    if (row == null) return;
+
+        //    // Save original style (clone to preserve)
+        //    var original = row.DefaultCellStyle.Clone() as DataGridViewCellStyle ?? new DataGridViewCellStyle();
+
+        //    // Create temporary flash style (subtle)
+        //    var flash = new DataGridViewCellStyle(row.DefaultCellStyle)
+        //    {
+        //        BackColor = System.Drawing.Color.LightGreen,
+        //        ForeColor = System.Drawing.Color.Black,
+        //        Font = new Font(dataGridViewDataTable.DefaultCellStyle.Font, FontStyle.Bold)
+        //    };
+
+        //    row.DefaultCellStyle = flash;
+
+        //    var t = new System.Windows.Forms.Timer();
+        //    t.Interval = ms;
+        //    t.Tick += (s, e) =>
+        //    {
+        //        t.Stop();
+        //        t.Dispose();
+        //        try
+        //        {
+        //            row.DefaultCellStyle = original;
+        //        }
+        //        catch { }
+        //    };
+        //    t.Start();
+        //}
+
+        private void StudentEntries_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // If user cancels closing, set e.Cancel = true
+            if (!ConfirmExitAndSaveIfNeeded())
+            {
+                e.Cancel = true;
+            }
+        }
+
+        /// <summary>
+        /// Returns true when it is OK to close the form (either user confirmed and saved/ignored changes).
+        /// Returns false when user cancelled the close (or save failed and user cancelled).
+        /// </summary>
+        private bool ConfirmExitAndSaveIfNeeded()
+        {
+            // Detect unsaved changes
+            bool hasUnsaved = _isNewMode || (_currentStudent != null && IsFormDirty());
+
+            if (!hasUnsaved)
+            {
+                // no unsaved changes — simple confirm exit
+                var dr = MessageBox.Show(this,
+                    "Are you sure you want to exit?",
+                    "Confirm Exit",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2);
+
+                return dr == DialogResult.Yes;
+            }
+
+            // There are unsaved changes. Offer Save / Don't save / Cancel (Yes = Save, No = Don't save, Cancel = Cancel)
+            var result = MessageBox.Show(this,
+                "You have unsaved changes. Do you want to save them before exiting?",
+                "Unsaved Changes",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button1);
+
+            if (result == DialogResult.Cancel)
+            {
+                // user cancelled exit
+                return false;
+            }
+            else if (result == DialogResult.No)
+            {
+                // user chose don't save — proceed closing
+                return true;
+            }
+            else // DialogResult.Yes -> save before exiting
+            {
+                // Try to save — show errors if save fails and allow user to cancel exit.
+                if (SaveCurrent(out string errorMessage))
+                {
+                    // saved successfully
+                    MessageBox.Show(this, "Changes saved.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // update UI if needed
+                    this.LoadData();
+                    this.ClearFields();
+                    return true;
+                }
+                else
+                {
+                    // save failed — show message and cancel exit so user can correct
+                    MessageBox.Show(this, $"Failed to save changes: {errorMessage}", "Save Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the form's visible fields differ from the current student (or the new-mode defaults).
+        /// Keep this conservative/simple — tweak comparisons to your needs.
+        /// </summary>
+        private bool IsFormDirty()
+        {
+            // If new mode and any field is non-empty / changed, it's dirty
+            if (_isNewMode)
+            {
+                if (!string.IsNullOrWhiteSpace(txtBoxId.Text)) return true;
+                if (!string.IsNullOrWhiteSpace(txtBoxFirstName.Text)) return true;
+                if (!string.IsNullOrWhiteSpace(txtBoxLastName.Text)) return true;
+                if (!string.IsNullOrWhiteSpace(txtBoxMiddleName.Text)) return true;
+                if (radioBtnMale.Checked || radioBtnFemale.Checked) return true;
+                if (cBoxCourse.SelectedIndex != -1) return true;
+                // if DateTime default matters in your app, compare to a default value — here we assume a new form uses DateTime.Now
+                return false;
+            }
+
+            // Not new mode: if no current student, nothing to compare
+            if (_currentStudent == null) return false;
+
+            // Compare trimmed strings and date only for clarity
+            string formGender = radioBtnMale.Checked ? "MALE" : (radioBtnFemale.Checked ? "FEMALE" : null);
+            string formCourse = cBoxCourse.SelectedItem?.ToString();
+
+            if (txtBoxFirstName.Text.Trim() != (_currentStudent.FirstName ?? "")) return true;
+            if (txtBoxLastName.Text.Trim() != (_currentStudent.LastName ?? "")) return true;
+            if (txtBoxMiddleName.Text.Trim() != (_currentStudent.MiddleName ?? "")) return true;
+            if (formGender != (_currentStudent.Gender ?? "")) return true;
+            if (dtpDoB.Value.Date != _currentStudent.DoB.Date) return true;
+            if ((formCourse ?? "") != (_currentStudent.Course ?? "")) return true;
+
+            // ID should not be editable in edit mode; ignore it
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to save current visible fields either as Insert (new mode) or Update (edit mode).
+        /// Returns true on success; false on failure and sets errorMessage accordingly.
+        /// Does not show additional modal dialogs except error message returned to caller.
+        /// </summary>
+        private bool SaveCurrent(out string errorMessage)
+        {
+            errorMessage = null;
+
+            // Gather student from fields — validates and shows validation modal inside GetStudentFromFields.
+            var student = GetStudentFromFields();
+            if (student == null)
+            {
+                errorMessage = "Validation failed.";
+                return false;
+            }
+
+            try
+            {
+                if (_isNewMode)
+                {
+                    // Insert new record
+                    _repository.Insert(student);
+                    return true;
+                }
+                else if (_currentStudent != null)
+                {
+                    // Update existing record — ensure we keep original ID
+                    student.Id = _currentStudent.Id;
+                    _repository.Update(student);
+                    return true;
+                }
+
+                // Nothing to do
+                return true;
+            }
+            catch (MySqlException ex)
+            {
+                // pass meaningful message up
+                errorMessage = $"Database error: {ex.Message}";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
+        }
+
     }
 
-    //REM: Repository interface (for SOLID: Dependency Inversion and Interface Segregation)
-    public interface IStudentRepository
-    {
-        List<Student> GetAll();
-        Student GetById(string id);
-        void Insert(Student student);
-        void Update(Student student);
-        void Delete(string id);
-        List<Student> Search(string query);
-        string GenerateId(string course);
-    }
-
-    //REM: Concrete repository implementation (Single Responsibility: handles DB operations)
-    public class StudentRepository : IStudentRepository
-    {
-        private readonly string _connectionString = "server=localhost;user=root;password=;database=brief_crud;";
-
-        private MySqlConnection GetConnection()
-        {
-            return new MySqlConnection(_connectionString);
-        }
-
-        public List<Student> GetAll()
-        {
-            var students = new List<Student>();
-            using (var conn = GetConnection())
-            {
-                conn.Open();
-                string sql = "SELECT * FROM students ORDER BY id";
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            students.Add(MapReaderToStudent(reader));
-                        }
-                    }
-                }
-            }
-            return students;
-        }
-
-        public Student GetById(string id)
-        {
-            using (var conn = GetConnection())
-            {
-                conn.Open();
-                string sql = "SELECT * FROM students WHERE id = @id";
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@id", id);
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return MapReaderToStudent(reader);
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        public void Insert(Student student)
-        {
-            using (var conn = GetConnection())
-            {
-                conn.Open();
-                string sql = "INSERT INTO students (id, first_name, last_name, middle_name, gender, dob, course) " +
-                             "VALUES (@id, @firstName, @lastName, @middleName, @gender, @dob, @course)";
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    AddStudentParameters(cmd, student);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        public void Update(Student student)
-        {
-            using (var conn = GetConnection())
-            {
-                conn.Open();
-                string sql = "UPDATE students SET first_name = @firstName, last_name = @lastName, " +
-                             "middle_name = @middleName, gender = @gender, dob = @dob, course = @course " +
-                             "WHERE id = @id";
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    AddStudentParameters(cmd, student);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        public void Delete(string id)
-        {
-            using (var conn = GetConnection())
-            {
-                conn.Open();
-                string sql = "DELETE FROM students WHERE id = @id";
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@id", id);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        public List<Student> Search(string query)
-        {
-            var students = new List<Student>();
-            using (var conn = GetConnection())
-            {
-                conn.Open();
-                string sql = "SELECT * FROM students WHERE CONCAT(id, ' ', first_name, ' ', last_name, ' ', " +
-                             "middle_name, ' ', gender, ' ', course) LIKE @query ORDER BY id";
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@query", "%" + query + "%");
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            students.Add(MapReaderToStudent(reader));
-                        }
-                    }
-                }
-            }
-            return students;
-        }
-
-        public string GenerateId(string course)
-        {
-            string year = DateTime.Now.Year.ToString().Substring(2);
-            string prefix = $"{year}-{course}-";
-            int seq = 1;
-            using (var conn = GetConnection())
-            {
-                conn.Open();
-                string sql = "SELECT MAX(id) FROM students WHERE id LIKE @prefix";
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@prefix", prefix + "%");
-                    object result = cmd.ExecuteScalar();
-                    if (result != DBNull.Value && result != null)
-                    {
-                        string maxId = result.ToString();
-                        string seqStr = maxId.Substring(prefix.Length);
-                        if (int.TryParse(seqStr, out int maxSeq))
-                        {
-                            seq = maxSeq + 1;
-                        }
-                    }
-                }
-            }
-            return prefix + seq.ToString("D4");
-        }
-
-        private Student MapReaderToStudent(MySqlDataReader reader)
-        {
-            return new Student
-            {
-                Id = reader["id"].ToString(),
-                FirstName = reader["first_name"].ToString(),
-                LastName = reader["last_name"].ToString(),
-                MiddleName = reader["middle_name"].ToString(),
-                Gender = reader["gender"].ToString(),
-                DoB = Convert.ToDateTime(reader["dob"]),
-                Course = reader["course"].ToString()
-            };
-        }
-
-        private void AddStudentParameters(MySqlCommand cmd, Student student)
-        {
-            cmd.Parameters.AddWithValue("@id", student.Id);
-            cmd.Parameters.AddWithValue("@firstName", student.FirstName);
-            cmd.Parameters.AddWithValue("@lastName", student.LastName);
-            cmd.Parameters.AddWithValue("@middleName", student.MiddleName ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@gender", student.Gender);
-            cmd.Parameters.AddWithValue("@dob", student.DoB.Date);
-            cmd.Parameters.AddWithValue("@course", student.Course);
-        }
-    }
 }

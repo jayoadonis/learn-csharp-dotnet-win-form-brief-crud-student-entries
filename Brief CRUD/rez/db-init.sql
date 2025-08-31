@@ -1,6 +1,4 @@
 
---REM: OPTION B (MariaDB compatible)
---REM: Simple students-only table. App generates IDs (GUID/UUID) and inserts them.
 
 CREATE DATABASE IF NOT EXISTS `brief_crud`
   DEFAULT CHARACTER SET = utf8mb4
@@ -8,27 +6,28 @@ CREATE DATABASE IF NOT EXISTS `brief_crud`
 USE `brief_crud`;
 
 CREATE TABLE IF NOT EXISTS `students` (
-  `id` CHAR(36) NOT NULL PRIMARY KEY,     --REM: UUID as text (36 chars)
+  `id` CHAR(36) NOT NULL PRIMARY KEY,   
   `first_name` VARCHAR(50) NOT NULL,
   `last_name` VARCHAR(50) NOT NULL,
   `middle_name` VARCHAR(50),
   `gender` ENUM('MALE','FEMALE','OTHER') NOT NULL,
   `dob` DATE NOT NULL,
-  `course` VARCHAR(100) NOT NULL,         --REM: free-form course text
+  `course` VARCHAR(100) NOT NULL,         
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CHECK (dob <= CURRENT_DATE())           --REM: may be ignored on older MariaDB; trigger below enforces it
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
---REM: Add useful indexes (ALTER TABLE syntax works on MariaDB)
 ALTER TABLE `students`
+  DROP INDEX IF EXISTS `idx_students_lastname`,
+  DROP INDEX IF EXISTS `idx_students_dob`,
   ADD INDEX `idx_students_lastname` (`last_name`),
   ADD INDEX `idx_students_dob` (`dob`);
 
---REM: If your MariaDB version does not enforce CHECK, create triggers to enforce DOB rule:
---REM: (DELIMITER usage required when running in a client that supports it)
+
+DROP TRIGGER IF EXISTS `trg_students_before_insert`;
+DROP TRIGGER IF EXISTS `trg_students_before_update`;
 
 DELIMITER $$
 CREATE TRIGGER trg_students_before_insert
@@ -50,6 +49,6 @@ BEGIN
 END$$
 DELIMITER ;
 
---REM: Example insertion (application supplies GUID)
+
 INSERT INTO students (id, first_name, last_name, middle_name, gender, dob, course)
-VALUES ('25-BSIT-0001','FYep','LYap','MYo','MALE','2000-01-28','BSIT');
+VALUES ('25-BSIT-0001','FYes','LYeah','MYo','MALE','2000-01-28','BSIT');

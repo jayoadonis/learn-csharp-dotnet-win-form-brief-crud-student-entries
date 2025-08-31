@@ -98,8 +98,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-	  <Compile Include="model\**\*.cs"/>
-	  <Compile Include="repository\**\*.cs"/>
+    <Compile Include="model\**\*.cs" />
+    <Compile Include="repository\**\*.cs" />
+    <Compile Include="model\IStudentRepository.cs" />
+    <Compile Include="service\StudentRepository.cs" />
     <Compile Include="StudentEntries.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -119,6 +121,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -133,6 +136,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="rez\img\icon\refresh-page-option.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

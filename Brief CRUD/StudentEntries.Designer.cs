@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.Label lblTitle;
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(StudentEntries));
             this.pnlRoot = new System.Windows.Forms.Panel();
             this.pnlContent = new System.Windows.Forms.SplitContainer();
             this.tblForm = new System.Windows.Forms.TableLayoutPanel();
@@ -67,6 +69,8 @@
             this.btnDelete = new System.Windows.Forms.Button();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblSubTitle = new System.Windows.Forms.Label();
+            this.btnRefreshTable = new System.Windows.Forms.Button();
+            this.lblIndicator = new System.Windows.Forms.Label();
             lblTitle = new System.Windows.Forms.Label();
             this.pnlRoot.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pnlContent)).BeginInit();
@@ -91,7 +95,7 @@
             lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             lblTitle.Location = new System.Drawing.Point(0, 0);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new System.Drawing.Size(890, 37);
+            lblTitle.Size = new System.Drawing.Size(884, 37);
             lblTitle.TabIndex = 5;
             lblTitle.Text = "Student Entries";
             lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -106,8 +110,9 @@
             this.pnlRoot.Location = new System.Drawing.Point(0, 0);
             this.pnlRoot.Name = "pnlRoot";
             this.pnlRoot.Padding = new System.Windows.Forms.Padding(15);
-            this.pnlRoot.Size = new System.Drawing.Size(920, 654);
+            this.pnlRoot.Size = new System.Drawing.Size(914, 654);
             this.pnlRoot.TabIndex = 15;
+            this.pnlRoot.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlRoot_Paint);
             // 
             // pnlContent
             // 
@@ -125,8 +130,8 @@
             // 
             this.pnlContent.Panel2.Controls.Add(this.pnlTable);
             this.pnlContent.Panel2.Controls.Add(this.pnlSearchBar);
-            this.pnlContent.Size = new System.Drawing.Size(890, 447);
-            this.pnlContent.SplitterDistance = 335;
+            this.pnlContent.Size = new System.Drawing.Size(884, 447);
+            this.pnlContent.SplitterDistance = 351;
             this.pnlContent.SplitterWidth = 8;
             this.pnlContent.TabIndex = 0;
             // 
@@ -168,7 +173,7 @@
             this.tblForm.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tblForm.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tblForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tblForm.Size = new System.Drawing.Size(335, 447);
+            this.tblForm.Size = new System.Drawing.Size(351, 447);
             this.tblForm.TabIndex = 3;
             // 
             // lblFirstName
@@ -192,7 +197,7 @@
             this.txtBoxFirstName.Margin = new System.Windows.Forms.Padding(8, 12, 8, 0);
             this.txtBoxFirstName.MinimumSize = new System.Drawing.Size(200, 4);
             this.txtBoxFirstName.Name = "txtBoxFirstName";
-            this.txtBoxFirstName.Size = new System.Drawing.Size(209, 29);
+            this.txtBoxFirstName.Size = new System.Drawing.Size(225, 29);
             this.txtBoxFirstName.TabIndex = 8;
             // 
             // lblLastName
@@ -216,7 +221,7 @@
             this.txtBoxLastName.Margin = new System.Windows.Forms.Padding(8, 12, 8, 0);
             this.txtBoxLastName.MinimumSize = new System.Drawing.Size(200, 4);
             this.txtBoxLastName.Name = "txtBoxLastName";
-            this.txtBoxLastName.Size = new System.Drawing.Size(209, 29);
+            this.txtBoxLastName.Size = new System.Drawing.Size(225, 29);
             this.txtBoxLastName.TabIndex = 9;
             // 
             // lblMiddleName
@@ -240,7 +245,7 @@
             this.txtBoxMiddleName.Margin = new System.Windows.Forms.Padding(8, 12, 8, 0);
             this.txtBoxMiddleName.MinimumSize = new System.Drawing.Size(200, 4);
             this.txtBoxMiddleName.Name = "txtBoxMiddleName";
-            this.txtBoxMiddleName.Size = new System.Drawing.Size(209, 29);
+            this.txtBoxMiddleName.Size = new System.Drawing.Size(225, 29);
             this.txtBoxMiddleName.TabIndex = 10;
             // 
             // lblGender
@@ -265,7 +270,7 @@
             this.pnlGender.Location = new System.Drawing.Point(118, 135);
             this.pnlGender.Margin = new System.Windows.Forms.Padding(8, 12, 8, 0);
             this.pnlGender.Name = "pnlGender";
-            this.pnlGender.Size = new System.Drawing.Size(209, 28);
+            this.pnlGender.Size = new System.Drawing.Size(225, 28);
             this.pnlGender.TabIndex = 17;
             this.pnlGender.Paint += new System.Windows.Forms.PaintEventHandler(this.flowLayoutPanel3_Paint);
             // 
@@ -317,7 +322,7 @@
             this.dtpDoB.Margin = new System.Windows.Forms.Padding(8, 12, 8, 0);
             this.dtpDoB.MinimumSize = new System.Drawing.Size(200, 4);
             this.dtpDoB.Name = "dtpDoB";
-            this.dtpDoB.Size = new System.Drawing.Size(209, 29);
+            this.dtpDoB.Size = new System.Drawing.Size(225, 29);
             this.dtpDoB.TabIndex = 12;
             // 
             // lblCourse
@@ -349,7 +354,7 @@
             this.cBoxCourse.Margin = new System.Windows.Forms.Padding(8, 32, 8, 0);
             this.cBoxCourse.MinimumSize = new System.Drawing.Size(200, 0);
             this.cBoxCourse.Name = "cBoxCourse";
-            this.cBoxCourse.Size = new System.Drawing.Size(209, 32);
+            this.cBoxCourse.Size = new System.Drawing.Size(225, 32);
             this.cBoxCourse.TabIndex = 11;
             this.cBoxCourse.Text = "- - -";
             // 
@@ -379,7 +384,7 @@
             this.tblId.Name = "tblId";
             this.tblId.RowCount = 1;
             this.tblId.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tblId.Size = new System.Drawing.Size(219, 41);
+            this.tblId.Size = new System.Drawing.Size(235, 41);
             this.tblId.TabIndex = 16;
             // 
             // txtBoxId
@@ -402,7 +407,7 @@
             this.pnlControlId.Location = new System.Drawing.Point(118, 315);
             this.pnlControlId.Margin = new System.Windows.Forms.Padding(8, 0, 0, 0);
             this.pnlControlId.Name = "pnlControlId";
-            this.pnlControlId.Size = new System.Drawing.Size(217, 100);
+            this.pnlControlId.Size = new System.Drawing.Size(233, 100);
             this.pnlControlId.TabIndex = 18;
             this.pnlControlId.Paint += new System.Windows.Forms.PaintEventHandler(this.flowLayoutPanel4_Paint);
             // 
@@ -453,18 +458,20 @@
             this.pnlTable.AutoScroll = true;
             this.pnlTable.Controls.Add(this.dataGridViewDataTable);
             this.pnlTable.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlTable.Location = new System.Drawing.Point(0, 40);
+            this.pnlTable.Location = new System.Drawing.Point(0, 44);
             this.pnlTable.Name = "pnlTable";
-            this.pnlTable.Size = new System.Drawing.Size(547, 407);
+            this.pnlTable.Size = new System.Drawing.Size(525, 403);
             this.pnlTable.TabIndex = 1;
             // 
             // dataGridViewDataTable
             // 
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dataGridViewDataTable.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewDataTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewDataTable.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewDataTable.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewDataTable.Name = "dataGridViewDataTable";
-            this.dataGridViewDataTable.Size = new System.Drawing.Size(547, 407);
+            this.dataGridViewDataTable.Size = new System.Drawing.Size(525, 403);
             this.dataGridViewDataTable.TabIndex = 1;
             // 
             // pnlSearchBar
@@ -473,33 +480,36 @@
             this.pnlSearchBar.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnlSearchBar.Controls.Add(this.richTextBoxSearch);
             this.pnlSearchBar.Controls.Add(this.btnSearch);
+            this.pnlSearchBar.Controls.Add(this.btnRefreshTable);
+            this.pnlSearchBar.Controls.Add(this.lblIndicator);
             this.pnlSearchBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlSearchBar.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
             this.pnlSearchBar.Location = new System.Drawing.Point(0, 0);
             this.pnlSearchBar.Name = "pnlSearchBar";
-            this.pnlSearchBar.Size = new System.Drawing.Size(547, 40);
+            this.pnlSearchBar.Size = new System.Drawing.Size(525, 44);
             this.pnlSearchBar.TabIndex = 0;
             // 
             // richTextBoxSearch
             // 
             this.richTextBoxSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextBoxSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBoxSearch.Location = new System.Drawing.Point(234, 4);
+            this.richTextBoxSearch.Location = new System.Drawing.Point(212, 4);
             this.richTextBoxSearch.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.richTextBoxSearch.Name = "richTextBoxSearch";
             this.richTextBoxSearch.Size = new System.Drawing.Size(310, 26);
             this.richTextBoxSearch.TabIndex = 0;
             this.richTextBoxSearch.Text = "";
+            this.richTextBoxSearch.KeyUp += new System.Windows.Forms.KeyEventHandler(this.richTxtBox_keyUp);
             // 
             // btnSearch
             // 
-            this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSearch.AutoSize = true;
             this.btnSearch.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btnSearch.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSearch.Location = new System.Drawing.Point(124, 3);
+            this.btnSearch.Location = new System.Drawing.Point(102, 3);
             this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(104, 34);
+            this.btnSearch.Size = new System.Drawing.Size(104, 38);
             this.btnSearch.TabIndex = 1;
             this.btnSearch.Text = "SEARCH";
             this.btnSearch.UseVisualStyleBackColor = true;
@@ -511,7 +521,7 @@
             this.pnlFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlFooter.Location = new System.Drawing.Point(15, 539);
             this.pnlFooter.Name = "pnlFooter";
-            this.pnlFooter.Size = new System.Drawing.Size(890, 100);
+            this.pnlFooter.Size = new System.Drawing.Size(884, 100);
             this.pnlFooter.TabIndex = 0;
             // 
             // pnlControl
@@ -526,7 +536,7 @@
             this.pnlControl.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlControl.Location = new System.Drawing.Point(0, 0);
             this.pnlControl.Name = "pnlControl";
-            this.pnlControl.Size = new System.Drawing.Size(890, 100);
+            this.pnlControl.Size = new System.Drawing.Size(884, 100);
             this.pnlControl.TabIndex = 4;
             this.pnlControl.WrapContents = false;
             // 
@@ -614,7 +624,7 @@
             this.pnlHeader.Location = new System.Drawing.Point(15, 15);
             this.pnlHeader.Name = "pnlHeader";
             this.pnlHeader.Padding = new System.Windows.Forms.Padding(0, 0, 0, 20);
-            this.pnlHeader.Size = new System.Drawing.Size(890, 77);
+            this.pnlHeader.Size = new System.Drawing.Size(884, 77);
             this.pnlHeader.TabIndex = 0;
             // 
             // lblSubTitle
@@ -623,18 +633,45 @@
             this.lblSubTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSubTitle.Location = new System.Drawing.Point(0, 37);
             this.lblSubTitle.Name = "lblSubTitle";
-            this.lblSubTitle.Size = new System.Drawing.Size(890, 20);
+            this.lblSubTitle.Size = new System.Drawing.Size(884, 20);
             this.lblSubTitle.TabIndex = 4;
             this.lblSubTitle.Text = "Brief CRUD Activity";
             this.lblSubTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnRefreshTable
+            // 
+            this.btnRefreshTable.AutoSize = true;
+            this.btnRefreshTable.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btnRefreshTable.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnRefreshTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRefreshTable.Image = global::Brief_CRUD.Properties.Resources.refresh_page_option;
+            this.btnRefreshTable.Location = new System.Drawing.Point(58, 3);
+            this.btnRefreshTable.Name = "btnRefreshTable";
+            this.btnRefreshTable.Size = new System.Drawing.Size(38, 38);
+            this.btnRefreshTable.TabIndex = 2;
+            this.btnRefreshTable.UseVisualStyleBackColor = true;
+            this.btnRefreshTable.Click += new System.EventHandler(this.btnRefreshTable_click);
+            // 
+            // lblIndicator
+            // 
+            this.lblIndicator.AutoSize = true;
+            this.lblIndicator.BackColor = System.Drawing.Color.Gold;
+            this.lblIndicator.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblIndicator.Location = new System.Drawing.Point(12, 8);
+            this.lblIndicator.Margin = new System.Windows.Forms.Padding(8);
+            this.lblIndicator.MinimumSize = new System.Drawing.Size(35, 0);
+            this.lblIndicator.Name = "lblIndicator";
+            this.lblIndicator.Size = new System.Drawing.Size(35, 28);
+            this.lblIndicator.TabIndex = 3;
             // 
             // StudentEntries
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(920, 654);
+            this.ClientSize = new System.Drawing.Size(914, 654);
             this.Controls.Add(this.pnlRoot);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(640, 480);
             this.Name = "StudentEntries";
             this.Text = "Student Entries (Brief CRUD Activity)";
@@ -706,6 +743,8 @@
         private System.Windows.Forms.Button btnUndoId;
         private System.Windows.Forms.FlowLayoutPanel pnlControlId;
         private System.Windows.Forms.Panel pnlBlankDivider;
+        private System.Windows.Forms.Button btnRefreshTable;
+        private System.Windows.Forms.Label lblIndicator;
     }
 }
 
