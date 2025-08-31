@@ -1,6 +1,9 @@
 # Student Entries (Brief CRUD)
 
-A lightweight/brief system for managing student records (Create, Retrieve, Update, Delete) with a partially responsive GUI.
+A minimal desktop application for CRUD operations (Create, Read, Update, Delete) on student records.  
+Features a lightweight and partially responsive GUI.
+
+> Note: This project is for educational/demo purposes only.
 
 <img src="Brief CRUD/docs/img/student-entries-brief-crud-000.png" alt="Student Entries Preview" width="720"/>
 
