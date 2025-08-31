@@ -1,5 +1,3 @@
-
-
 CREATE DATABASE IF NOT EXISTS `brief_crud`
   DEFAULT CHARACTER SET = utf8mb4
   DEFAULT COLLATE = utf8mb4_unicode_ci;
@@ -25,7 +23,6 @@ ALTER TABLE `students`
   ADD INDEX `idx_students_lastname` (`last_name`),
   ADD INDEX `idx_students_dob` (`dob`);
 
-
 DROP TRIGGER IF EXISTS `trg_students_before_insert`;
 DROP TRIGGER IF EXISTS `trg_students_before_update`;
 
@@ -48,7 +45,6 @@ BEGIN
   END IF;
 END$$
 DELIMITER ;
-
 
 INSERT INTO students (id, first_name, last_name, middle_name, gender, dob, course)
 VALUES ('25-BSIT-0001','FYes','LYeah','MYo','MALE','2000-01-28','BSIT');

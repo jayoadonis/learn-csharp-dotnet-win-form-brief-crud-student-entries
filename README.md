@@ -36,14 +36,12 @@ CREATE TABLE IF NOT EXISTS `students` (
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
--- Recreate indexes safely
 ALTER TABLE `students`
   DROP INDEX IF EXISTS `idx_students_lastname`,
   DROP INDEX IF EXISTS `idx_students_dob`,
   ADD INDEX `idx_students_lastname` (`last_name`),
   ADD INDEX `idx_students_dob` (`dob`);
 
--- Recreate triggers safely
 DROP TRIGGER IF EXISTS `trg_students_before_insert`;
 DROP TRIGGER IF EXISTS `trg_students_before_update`;
 
@@ -67,7 +65,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Sample record
 INSERT INTO students (id, first_name, last_name, middle_name, gender, dob, course)
 VALUES ('25-BSIT-0001','FYes','LYeah','MYo','MALE','2000-01-28','BSIT');
 ```
@@ -78,7 +75,6 @@ private readonly string _connection
     = "server=<host>;user=<username>;password=<password>;database=brief_crud;";
 
 ```
-
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
